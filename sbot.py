@@ -1,5 +1,8 @@
 import warnings
 warnings.filterwarnings("ignore")
+import os
+from dotenv import load_dotenv
+
 import google.generativeai as genai
 from telegram import Update
 from telegram.ext import (
@@ -11,12 +14,12 @@ from telegram.ext import (
 )
 
 
-BOT_TOKEN = "8801774157:AAGy81tfvFl8ri7G-i5AJZjzdePwaVGkzEc"
-GEMINI_API_KEY = "AQ.Ab8RN6J9hyp16D-TUMp9W3gWV6_VEP4ocm-3YSvqkNAE2isk_Q"
+load_dotenv()
 
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 genai.configure(api_key=GEMINI_API_KEY)
-
 
 model = genai.GenerativeModel("gemini-2.5-flash")
 
@@ -28,7 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    
+
     if not update.message or not update.message.text:
         return
 
@@ -63,15 +66,17 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
+    if not BOT_TOKEN:
+        print("❌ BOT_TOKEN not found in .env")
+        return
+
+    if not GEMINI_API_KEY:
+        print("❌ GEMINI_API_KEY not found in .env")
+        return
+
     app = Application.builder().token(BOT_TOKEN).build()
 
-    app.add_handler(
-        CommandHandler(
-            "start",
-            start
-        )
-    )
-
+    app.add_handler(CommandHandler("start", start))
     app.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
